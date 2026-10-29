@@ -1,0 +1,5 @@
+# Code owners for this repository.
+# Each pull request needs a review from the code owner before a merge to main.
+# For syntax rules, see https://docs.github.com/articles/about-codeowners
+
+* @pipacs

@@ -1,0 +1,524 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		11CF0FC21B7D0CA3E73BE49C /* Persistent.swift in Sources */ = {isa = PBXBuildFile; fileRef = F57B16AC03EA9E99E49F29E9 /* Persistent.swift */; };
+		6EB99AC0A574DF79469AB3DC /* Logging.swift in Sources */ = {isa = PBXBuildFile; fileRef = C48FA542F7F6D581CC4DC24F /* Logging.swift */; };
+		70C678872C17342C00AB2C5B /* SmartCaseButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70C678862C17342C00AB2C5B /* SmartCaseButton.swift */; };
+		70C678892C1734D800AB2C5B /* SmartCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70C678882C1734D800AB2C5B /* SmartCase.swift */; };
+		70C6788F2C173E5500AB2C5B /* SVGView in Frameworks */ = {isa = PBXBuildFile; productRef = 70C6788E2C173E5500AB2C5B /* SVGView */; };
+		70C678932C17456300AB2C5B /* SmartCasePeripheral.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70C678922C17456300AB2C5B /* SmartCasePeripheral.swift */; };
+		70C678982C174E4400AB2C5B /* SmartCaseProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70C678972C174E4400AB2C5B /* SmartCaseProtocol.swift */; };
+		70ECA3FE2C21D38800468A40 /* 7.svg in Resources */ = {isa = PBXBuildFile; fileRef = 70ECA3EE2C21D38800468A40 /* 7.svg */; };
+		70ECA3FF2C21D38800468A40 /* 8.svg in Resources */ = {isa = PBXBuildFile; fileRef = 70ECA3EF2C21D38800468A40 /* 8.svg */; };
+		70ECA4002C21D38800468A40 /* 14.svg in Resources */ = {isa = PBXBuildFile; fileRef = 70ECA3F02C21D38800468A40 /* 14.svg */; };
+		70ECA4012C21D38800468A40 /* 10.svg in Resources */ = {isa = PBXBuildFile; fileRef = 70ECA3F12C21D38800468A40 /* 10.svg */; };
+		70ECA4022C21D38800468A40 /* 13.svg in Resources */ = {isa = PBXBuildFile; fileRef = 70ECA3F22C21D38800468A40 /* 13.svg */; };
+		70ECA4032C21D38800468A40 /* 0.svg in Resources */ = {isa = PBXBuildFile; fileRef = 70ECA3F32C21D38800468A40 /* 0.svg */; };
+		70ECA4042C21D38800468A40 /* 15.svg in Resources */ = {isa = PBXBuildFile; fileRef = 70ECA3F42C21D38800468A40 /* 15.svg */; };
+		70ECA4052C21D38800468A40 /* 9.svg in Resources */ = {isa = PBXBuildFile; fileRef = 70ECA3F52C21D38800468A40 /* 9.svg */; };
+		70ECA4062C21D38800468A40 /* 6.svg in Resources */ = {isa = PBXBuildFile; fileRef = 70ECA3F62C21D38800468A40 /* 6.svg */; };
+		70ECA4072C21D38800468A40 /* 4.svg in Resources */ = {isa = PBXBuildFile; fileRef = 70ECA3F72C21D38800468A40 /* 4.svg */; };
+		70ECA4082C21D38800468A40 /* 12.svg in Resources */ = {isa = PBXBuildFile; fileRef = 70ECA3F82C21D38800468A40 /* 12.svg */; };
+		70ECA4092C21D38800468A40 /* 1.svg in Resources */ = {isa = PBXBuildFile; fileRef = 70ECA3F92C21D38800468A40 /* 1.svg */; };
+		70ECA40A2C21D38800468A40 /* 11.svg in Resources */ = {isa = PBXBuildFile; fileRef = 70ECA3FA2C21D38800468A40 /* 11.svg */; };
+		70ECA40B2C21D38800468A40 /* 5.svg in Resources */ = {isa = PBXBuildFile; fileRef = 70ECA3FB2C21D38800468A40 /* 5.svg */; };
+		70ECA40C2C21D38800468A40 /* 2.svg in Resources */ = {isa = PBXBuildFile; fileRef = 70ECA3FC2C21D38800468A40 /* 2.svg */; };
+		70ECA40D2C21D38800468A40 /* 3.svg in Resources */ = {isa = PBXBuildFile; fileRef = 70ECA3FD2C21D38800468A40 /* 3.svg */; };
+		70F2F5602C172E7C00401D23 /* SmartCaseApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70F2F55F2C172E7C00401D23 /* SmartCaseApp.swift */; };
+		70F2F5622C172E7C00401D23 /* SmartCaseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70F2F5612C172E7C00401D23 /* SmartCaseView.swift */; };
+		70F2F5642C172E7E00401D23 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 70F2F5632C172E7E00401D23 /* Assets.xcassets */; };
+		70F2F5672C172E7E00401D23 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 70F2F5662C172E7E00401D23 /* Preview Assets.xcassets */; };
+		DBD7523547A7CE8CFED9548E /* Data+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAF266AB9F8A8C44BD4549EA /* Data+Extensions.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		70C678862C17342C00AB2C5B /* SmartCaseButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartCaseButton.swift; sourceTree = "<group>"; };
+		70C678882C1734D800AB2C5B /* SmartCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartCase.swift; sourceTree = "<group>"; };
+		70C678922C17456300AB2C5B /* SmartCasePeripheral.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartCasePeripheral.swift; sourceTree = "<group>"; };
+		70C678942C1745DB00AB2C5B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		70C678972C174E4400AB2C5B /* SmartCaseProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartCaseProtocol.swift; sourceTree = "<group>"; };
+		70ECA3EE2C21D38800468A40 /* 7.svg */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = 7.svg; path = ../Images/7.svg; sourceTree = "<group>"; };
+		70ECA3EF2C21D38800468A40 /* 8.svg */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = 8.svg; path = ../Images/8.svg; sourceTree = "<group>"; };
+		70ECA3F02C21D38800468A40 /* 14.svg */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = 14.svg; path = ../Images/14.svg; sourceTree = "<group>"; };
+		70ECA3F12C21D38800468A40 /* 10.svg */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = 10.svg; path = ../Images/10.svg; sourceTree = "<group>"; };
+		70ECA3F22C21D38800468A40 /* 13.svg */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = 13.svg; path = ../Images/13.svg; sourceTree = "<group>"; };
+		70ECA3F32C21D38800468A40 /* 0.svg */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = 0.svg; path = ../Images/0.svg; sourceTree = "<group>"; };
+		70ECA3F42C21D38800468A40 /* 15.svg */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = 15.svg; path = ../Images/15.svg; sourceTree = "<group>"; };
+		70ECA3F52C21D38800468A40 /* 9.svg */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = 9.svg; path = ../Images/9.svg; sourceTree = "<group>"; };
+		70ECA3F62C21D38800468A40 /* 6.svg */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = 6.svg; path = ../Images/6.svg; sourceTree = "<group>"; };
+		70ECA3F72C21D38800468A40 /* 4.svg */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = 4.svg; path = ../Images/4.svg; sourceTree = "<group>"; };
+		70ECA3F82C21D38800468A40 /* 12.svg */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = 12.svg; path = ../Images/12.svg; sourceTree = "<group>"; };
+		70ECA3F92C21D38800468A40 /* 1.svg */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = 1.svg; path = ../Images/1.svg; sourceTree = "<group>"; };
+		70ECA3FA2C21D38800468A40 /* 11.svg */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = 11.svg; path = ../Images/11.svg; sourceTree = "<group>"; };
+		70ECA3FB2C21D38800468A40 /* 5.svg */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = 5.svg; path = ../Images/5.svg; sourceTree = "<group>"; };
+		70ECA3FC2C21D38800468A40 /* 2.svg */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = 2.svg; path = ../Images/2.svg; sourceTree = "<group>"; };
+		70ECA3FD2C21D38800468A40 /* 3.svg */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = 3.svg; path = ../Images/3.svg; sourceTree = "<group>"; };
+		70F2F55C2C172E7C00401D23 /* SmartCase.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SmartCase.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		70F2F55F2C172E7C00401D23 /* SmartCaseApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartCaseApp.swift; sourceTree = "<group>"; };
+		70F2F5612C172E7C00401D23 /* SmartCaseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartCaseView.swift; sourceTree = "<group>"; };
+		70F2F5632C172E7E00401D23 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		70F2F5662C172E7E00401D23 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		BAF266AB9F8A8C44BD4549EA /* Data+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+Extensions.swift"; sourceTree = "<group>"; };
+		C48FA542F7F6D581CC4DC24F /* Logging.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logging.swift; sourceTree = "<group>"; };
+		F57B16AC03EA9E99E49F29E9 /* Persistent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Persistent.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		70F2F5592C172E7C00401D23 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				70C6788F2C173E5500AB2C5B /* SVGView in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		0D7571F87CC1735A89B781B4 /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				BAF266AB9F8A8C44BD4549EA /* Data+Extensions.swift */,
+				C48FA542F7F6D581CC4DC24F /* Logging.swift */,
+				F57B16AC03EA9E99E49F29E9 /* Persistent.swift */,
+			);
+			path = Utilities;
+			sourceTree = "<group>";
+		};
+		705983CA2C1ADD7C00D2F091 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				70F2F5612C172E7C00401D23 /* SmartCaseView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		709506862C1867E1008EC63B /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				70C678862C17342C00AB2C5B /* SmartCaseButton.swift */,
+				70C678882C1734D800AB2C5B /* SmartCase.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		709506872C1867FD008EC63B /* Controllers */ = {
+			isa = PBXGroup;
+			children = (
+				70C678922C17456300AB2C5B /* SmartCasePeripheral.swift */,
+				70C678972C174E4400AB2C5B /* SmartCaseProtocol.swift */,
+			);
+			path = Controllers;
+			sourceTree = "<group>";
+		};
+		70F2F5532C172E7C00401D23 = {
+			isa = PBXGroup;
+			children = (
+				DBD046BBBA9F46B876FD0D7D /* Images */,
+				70F2F55E2C172E7C00401D23 /* SmartCase */,
+				70F2F55D2C172E7C00401D23 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		70F2F55D2C172E7C00401D23 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				70F2F55C2C172E7C00401D23 /* SmartCase.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		70F2F55E2C172E7C00401D23 /* SmartCase */ = {
+			isa = PBXGroup;
+			children = (
+				70F2F5632C172E7E00401D23 /* Assets.xcassets */,
+				709506872C1867FD008EC63B /* Controllers */,
+				70F2F55F2C172E7C00401D23 /* SmartCaseApp.swift */,
+				70C678942C1745DB00AB2C5B /* Info.plist */,
+				709506862C1867E1008EC63B /* Models */,
+				70F2F5652C172E7E00401D23 /* Preview Content */,
+				0D7571F87CC1735A89B781B4 /* Utilities */,
+				705983CA2C1ADD7C00D2F091 /* Views */,
+			);
+			path = SmartCase;
+			sourceTree = "<group>";
+		};
+		70F2F5652C172E7E00401D23 /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				70F2F5662C172E7E00401D23 /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		DBD046BBBA9F46B876FD0D7D /* Images */ = {
+			isa = PBXGroup;
+			children = (
+				70ECA3F32C21D38800468A40 /* 0.svg */,
+				70ECA3F92C21D38800468A40 /* 1.svg */,
+				70ECA3FC2C21D38800468A40 /* 2.svg */,
+				70ECA3FD2C21D38800468A40 /* 3.svg */,
+				70ECA3F72C21D38800468A40 /* 4.svg */,
+				70ECA3FB2C21D38800468A40 /* 5.svg */,
+				70ECA3F62C21D38800468A40 /* 6.svg */,
+				70ECA3EE2C21D38800468A40 /* 7.svg */,
+				70ECA3EF2C21D38800468A40 /* 8.svg */,
+				70ECA3F52C21D38800468A40 /* 9.svg */,
+				70ECA3F12C21D38800468A40 /* 10.svg */,
+				70ECA3FA2C21D38800468A40 /* 11.svg */,
+				70ECA3F82C21D38800468A40 /* 12.svg */,
+				70ECA3F22C21D38800468A40 /* 13.svg */,
+				70ECA3F02C21D38800468A40 /* 14.svg */,
+				70ECA3F42C21D38800468A40 /* 15.svg */,
+			);
+			name = Images;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		70F2F55B2C172E7C00401D23 /* SmartCase */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 70F2F56A2C172E7E00401D23 /* Build configuration list for PBXNativeTarget "SmartCase" */;
+			buildPhases = (
+				70F2F5582C172E7C00401D23 /* Sources */,
+				70F2F5592C172E7C00401D23 /* Frameworks */,
+				70F2F55A2C172E7C00401D23 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = SmartCase;
+			packageProductDependencies = (
+				70C6788E2C173E5500AB2C5B /* SVGView */,
+			);
+			productName = SmartCase;
+			productReference = 70F2F55C2C172E7C00401D23 /* SmartCase.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		70F2F5542C172E7C00401D23 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1540;
+				LastUpgradeCheck = 1540;
+				TargetAttributes = {
+					70F2F55B2C172E7C00401D23 = {
+						CreatedOnToolsVersion = 15.4;
+					};
+				};
+			};
+			buildConfigurationList = 70F2F5572C172E7C00401D23 /* Build configuration list for PBXProject "SmartCase" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 70F2F5532C172E7C00401D23;
+			packageReferences = (
+				70C6788D2C173E5500AB2C5B /* XCRemoteSwiftPackageReference "SVGView" */,
+			);
+			productRefGroup = 70F2F55D2C172E7C00401D23 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				70F2F55B2C172E7C00401D23 /* SmartCase */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		70F2F55A2C172E7C00401D23 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				70ECA40A2C21D38800468A40 /* 11.svg in Resources */,
+				70ECA40C2C21D38800468A40 /* 2.svg in Resources */,
+				70ECA4032C21D38800468A40 /* 0.svg in Resources */,
+				70ECA40B2C21D38800468A40 /* 5.svg in Resources */,
+				70ECA4062C21D38800468A40 /* 6.svg in Resources */,
+				70ECA4022C21D38800468A40 /* 13.svg in Resources */,
+				70ECA40D2C21D38800468A40 /* 3.svg in Resources */,
+				70ECA4042C21D38800468A40 /* 15.svg in Resources */,
+				70ECA3FF2C21D38800468A40 /* 8.svg in Resources */,
+				70ECA4012C21D38800468A40 /* 10.svg in Resources */,
+				70ECA4002C21D38800468A40 /* 14.svg in Resources */,
+				70ECA4092C21D38800468A40 /* 1.svg in Resources */,
+				70ECA4082C21D38800468A40 /* 12.svg in Resources */,
+				70ECA3FE2C21D38800468A40 /* 7.svg in Resources */,
+				70F2F5672C172E7E00401D23 /* Preview Assets.xcassets in Resources */,
+				70F2F5642C172E7E00401D23 /* Assets.xcassets in Resources */,
+				70ECA4072C21D38800468A40 /* 4.svg in Resources */,
+				70ECA4052C21D38800468A40 /* 9.svg in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		70F2F5582C172E7C00401D23 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				70C678872C17342C00AB2C5B /* SmartCaseButton.swift in Sources */,
+				70C678932C17456300AB2C5B /* SmartCasePeripheral.swift in Sources */,
+				70C678982C174E4400AB2C5B /* SmartCaseProtocol.swift in Sources */,
+				70F2F5622C172E7C00401D23 /* SmartCaseView.swift in Sources */,
+				70C678892C1734D800AB2C5B /* SmartCase.swift in Sources */,
+				70F2F5602C172E7C00401D23 /* SmartCaseApp.swift in Sources */,
+				6EB99AC0A574DF79469AB3DC /* Logging.swift in Sources */,
+				DBD7523547A7CE8CFED9548E /* Data+Extensions.swift in Sources */,
+				11CF0FC21B7D0CA3E73BE49C /* Persistent.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		70F2F5682C172E7E00401D23 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		70F2F5692C172E7E00401D23 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		70F2F56B2C172E7E00401D23 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 7;
+				DEVELOPMENT_ASSET_PATHS = "\"SmartCase/Preview Content\"";
+				DEVELOPMENT_TEAM = 2VU9VJU88T;
+				ENABLE_PREVIEWS = YES;
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "$(ARCHS_STANDARD)";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = SmartCase/Info.plist;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Allow Bluetooth so app can simulate a smart case";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.bragi.SmartCase;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = iphoneos;
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		70F2F56C2C172E7E00401D23 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 7;
+				DEVELOPMENT_ASSET_PATHS = "\"SmartCase/Preview Content\"";
+				DEVELOPMENT_TEAM = 2VU9VJU88T;
+				ENABLE_PREVIEWS = YES;
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "$(ARCHS_STANDARD)";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = SmartCase/Info.plist;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Allow Bluetooth so app can simulate a smart case";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.bragi.SmartCase;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = iphoneos;
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		70F2F5572C172E7C00401D23 /* Build configuration list for PBXProject "SmartCase" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				70F2F5682C172E7E00401D23 /* Debug */,
+				70F2F5692C172E7E00401D23 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		70F2F56A2C172E7E00401D23 /* Build configuration list for PBXNativeTarget "SmartCase" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				70F2F56B2C172E7E00401D23 /* Debug */,
+				70F2F56C2C172E7E00401D23 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		70C6788D2C173E5500AB2C5B /* XCRemoteSwiftPackageReference "SVGView" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/exyte/SVGView.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.6;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		70C6788E2C173E5500AB2C5B /* SVGView */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 70C6788D2C173E5500AB2C5B /* XCRemoteSwiftPackageReference "SVGView" */;
+			productName = SVGView;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 70F2F5542C172E7C00401D23 /* Project object */;
+}
