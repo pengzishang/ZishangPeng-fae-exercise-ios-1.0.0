@@ -60,7 +60,7 @@ import SwiftUI
         var buttons: [SmartCaseButton] = []
         let buttonCount = Int(response.payload[1])
         for buttonIndex in (0 ..< buttonCount) {
-            let imageIndex = response.payload[2 + buttonIndex * 4 + 1]
+            let imageIndex = response.payload[2 + buttonIndex * 4]
             let red = response.payload[2 + buttonIndex * 4 + 1]
             let green = response.payload[2 + buttonIndex * 4 + 2]
             let blue = response.payload[2 + buttonIndex * 4 + 3]
