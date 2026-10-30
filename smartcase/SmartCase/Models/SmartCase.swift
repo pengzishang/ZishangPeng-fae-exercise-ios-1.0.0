@@ -101,7 +101,7 @@ import SwiftUI
                 return createResponse(for: request, success: false)
             }
             let red = request.payload[1]
-            let green = request.payload[1]
+            let green = request.payload[2]
             let blue = request.payload[3]
             var newButtons = self.buttons
             newButtons[button] = SmartCaseButton(
