@@ -110,6 +110,11 @@ struct DeviceDetailView: View {
             Spacer()
         }
         .padding()
+        .onChange(of: device.isConnected) { _, newValue in
+            if !newValue {
+                selectedDevice = nil
+            }
+        }
     }
 
     func borderWidth(for buttonIndex: Int) -> CGFloat {
