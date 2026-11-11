@@ -1,87 +1,89 @@
-# Bug 2: Disconnection Not Detected — Troubleshooting Record
+# Bug 2：断连无感知 排查记录
 
 > 2. `App` is connected to a `smartcase`. When terminating `smartcase` on the iPhone, `app` doesn't seem to notice it. `App` never reverts to disconnected state. Some delay noticing it would be acceptable, but nothing happened in the app, even after 30 seconds.
 
-## 1. Pinned Version and Context
+*本文件为中文版；English version: [bug-02-analysis.md.en.md](bug-02-analysis.md.en.md)*
 
-- Baseline branch / commit: main / `ad26697` (Initial commit: fae-exercise-ios assignment)
-- Working-tree status: during troubleshooting there were uncommitted changes (`DeviceDetailView.swift`, +5 lines); they are now committed on `fix/02-connection-lost-detection` (`809fc18`), and the working tree is currently clean
-- Fix branch: `fix/02-connection-lost-detection`
-- Environment: Mac (MacBook Air M1 / MacBookAir10,1 / macOS 27.0.1); iPhone (iPhone 14 / iOS 27.0.1); Xcode 27.1 (27A9275)
-- Bluetooth permission / initial button data: `INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription` = "Allow Bluetooth access to find and control nearby smart watches" (i.e. the wording Bug 4 is about, see `app/App.xcodeproj/project.pbxproj:399,429`); initial button data was not separately captured — to be added
+## 1. 固定版本与现场
 
-> Do not use reset/clean to pin the version; do not upgrade dependencies or the OS while troubleshooting.
+- 基线分支 / 提交号：main / `ad26697`（Initial commit: fae-exercise-ios assignment）
+- 工作区状态：排查期间曾有未提交改动（`DeviceDetailView.swift` +5 行），已提交至 `fix/02-connection-lost-detection`（`809fc18`），当前工作区干净
+- 修复分支：`fix/02-connection-lost-detection`
+- 环境：Mac（MacBook Air M1 / MacBookAir10,1 / macOS 27.0.1）；iPhone（iPhone 14 / iOS 27.0.1）；Xcode 27.1（27A9275）
+- 蓝牙权限 / 初始按钮数据：`INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription` = "Allow Bluetooth access to find and control nearby smart watches"（即 Bug 4 所述问题文案，见 `app/App.xcodeproj/project.pbxproj:399,429`）；初始按钮数据未单独取证，待补
 
-## 2. Symptom and Reproduction
+> 不用 reset/clean 固定版本；排查期间不升级依赖和系统。
 
-- Expected / basis: after terminating `smartcase` on the iPhone, the Mac `App` should return to the disconnected state within an acceptable delay (basis: README bug report 2); actual: nothing changes in the App — still showing connected after 30 seconds.
-- Last known-good time / version / configuration (to narrow the regression window): not done (first time picking this up, no historical known-good baseline)
-- Initial classification: suspected defect
+## 2. 现象与复现
 
-| Step | Action | Expected | Actual |
+- 预期 / 依据：iPhone 上终止 `smartcase` 后，Mac 端 `App` 应在可接受的延迟内回到未连接（disconnected）状态（依据 README Bug 报告 2）；实际：App 无任何变化，30 秒后仍显示已连接。
+- 最近一次正常的时间 / 版本 / 配置（缩小回归范围）：未做（首次接手，无历史正常基线）
+- 初步分类：疑似缺陷
+
+| 步骤 | 操作 | 预期 | 实际 |
 | --- | --- | --- | --- |
-| 1 | Mac `App` scans and connects to `smartcase` on the iPhone | Connection succeeds, 4 buttons shown | Connection succeeds (reproduced 2026-10-30) |
-| 2 | Terminate `smartcase` directly on the iPhone (kill the App) | App returns to the device list / disconnected state after a delay | App stays on the Smart Case Control detail page, the 4 buttons still render normally, no return to the device list (see screenshot below) |
-| 3 | Keep waiting ≥30 seconds and observe | Should have reached the disconnected state (a delay is acceptable) | The UI stays on the detail page and does not return to the list; a follow-up observation confirmed the Connected label does flip to `No` on its own (the delay is a link-layer timeout), while the Disconnect button stays greyed out (reporter judged the reproduction successful) |
+| 1 | Mac 端 `App` 扫描并连接 iPhone 端 `smartcase` | 连接成功，显示 4 个按钮 | 连接成功（2026-10-30 复现） |
+| 2 | iPhone 上直接终止 `smartcase`（杀掉 App） | App 延迟后回到设备列表 / 断连状态 | App 仍停留在 Smart Case Control 详情页，4 个按钮照常显示，未回设备列表（见下方截图） |
+| 3 | 继续等待 ≥30 秒并观察 | 已回断连状态（延迟可接受） | 界面停留详情页不回列表；补充观察确认 Connected 文案会自动翻为 `No`（延迟为链路层超时）， Disconnect 按钮置灰（用户判定复现成功） |
 
-![Reproduction: after killing smartcase on the iPhone, the Mac App still sits on the button detail page](<bug-02-assets/repro-01-after-kill.webp>)
+![复现截图：杀掉 iPhone 端 smartcase 后，Mac App 仍停留在按钮详情页](<bug-02-assets/repro-01-after-kill.webp>)
 
-- Reproduction count / minimal repro: 1 time; minimal repro = after a successful connection, kill `smartcase` on the iPhone and watch the Mac App UI.
-- Logs if needed: start capture before reproducing, stop after, keep only the relevant window, and redact before sharing.
+- 复现次数 / 最小复现：1 次；最小复现 = 连接成功后直接杀掉 iPhone 端 `smartcase`，观察 Mac App 界面。
+- 如需日志：复现前开始、复现后停止，只留相关时段；共享前脱敏。
 
-Additional observations from the reporter (2026-10-30):
+用户补充观察（2026-10-30）：
 
-- The Connected field on the detail page flips from `Yes` to `No` automatically — which implies some internal timing mechanism exists (it waits a while before declaring a disconnect).
-- Next direction: find that timing mechanism.
-- ~~Timer-mechanism hypothesis~~ (refuted): tracing `SmartCaseDevice.isConnected` with the Xcode Call Hierarchy — `peripheralDidDisconnect()` assigns `false` to it directly, and its caller is `SmartCaseDeviceManager.centralManager(_:didDisconnectPeripheral:error:)`. Conclusion: the delay is not a timer inside the App, it is the **BLE link-layer supervision timeout (OS behavior)**.
-- Supporting evidence: an explicit Disconnect click (which goes through `cancelPeripheralConnection` to tear the link down actively) causes `centralManager(_:didDisconnectPeripheral:error:)` to be called almost immediately; by contrast, the callback after killing the peer App is clearly delayed, which further confirms the delay comes from the link-layer supervision timeout.
-- **PacketLogger HCI capture, hard evidence (2026-10-30)**: two Disconnection Complete events compared —
-  - `12:03:55.589`, Connection Handle `0x0058`, Reason `0x16` (Connection Terminated By Local Host) = the Mac side initiated the disconnect **actively** (clicking Disconnect);
-  - `12:08:58.078`, Connection Handle `0x004C`, Reason `0x13` (Remote User Terminated Connection) = the Mac **passively** received the teardown (peer killed, reported after a timeout).
+- 详情页 Connected 位置会自动由 `Yes` 转为 `No`——说明内部存在一个计时机制（等待一段时间后才判定断连）。
+- 下一步方向：找到这个计时机制。
+- ~~计时机制假设~~（已推翻）：对 `SmartCaseDevice.isConnected` 做 Xcode Call Hierarchy 跟踪——`peripheralDidDisconnect()` 直接给它赋 `false`，其调用方为 `SmartCaseDeviceManager.centralManager(_:didDisconnectPeripheral:error:)`。结论：延迟不是 App 内计时器，而是 **BLE 链路层的 supervision timeout（系统行为）**。
+- 佐证：如果是主动点击 Disconnect（走 `cancelPeripheralConnection` 主动断链），`centralManager(_:didDisconnectPeripheral:error:)` 几乎立刻被调用；对比之下杀掉对端 App 后的回调明显延迟，进一步印证延迟来自链路层 supervision timeout。
+- **PacketLogger HCI 抓包实证（2026-10-30）**：两条 Disconnection Complete 事件对照——
+  - `12:03:55.589`，Connection Handle `0x0058`，Reason `0x16`（Connection Terminated By Local Host）＝ Mac 端**主动**发起断开（点 Disconnect）；
+  - `12:08:58.078`，Connection Handle `0x004C`，Reason `0x13`（Remote User Terminated Connection）＝ Mac **被动**收到断链（对端被杀、超时后上报）。
 
-  ![HCI capture: the two Disconnection Complete events compared — active disconnect 0x16 vs. passive teardown 0x13](<bug-02-assets/hci-disconnection-complete.webp>)
+  ![HCI 抓包：主动断开 0x16 与被动断链 0x13 两条 Disconnection Complete 对照](<bug-02-assets/hci-disconnection-complete.webp>)
 
-  Conclusion confirmed: one callback, two trigger paths — the difference in delay comes from link-layer behavior, not from an App timer.
+  结论坐实：同一回调两种触发路径，延迟差异来自链路层行为，非 App 计时器。
 
-## 3. Layered Trace (easy → hard, stop once the fault is located)
+## 3. 分层排查（从易到难，做到定位即止）
 
-Fill four columns per layer; conclusions are: anomaly found / no anomaly seen / insufficient evidence / N/A.
-Approach: follow "the value the upper layer sent → the value the lower layer received" and find the earliest boundary where they diverge.
+每层填四格；结论选：发现异常 / 未见异常 / 证据不足 / 不适用。
+思路：沿“上层送出的值 → 下层收到的值”找最早出差异的边界。
 
-### 3.1 App code layer (both Mac `app` and iPhone `smartcase`)
+### 3.1 App 代码层（Mac `app` 与 iPhone `smartcase` 都看）
 
-| What to check / where | Expected | Actual | Conclusion |
+| 查什么 / 在哪查 | 预期 | 实际 | 结论 |
 | --- | --- | --- | --- |
-| UI-layer response to disconnection (`DeviceDetailView.swift`) | The UI should refresh after a disconnect (return to the device list) | The SDK-layer delegate and `isConnected` are both triggered correctly, but the UI layer neither observes it nor refreshes | Anomaly found (root cause lives here) |
+| UI 层对断连的响应（`DeviceDetailView.swift`） | 断连后界面应刷新（回设备列表） | SDK 层代理与 `isConnected` 均被正确触发，但 UI 层没有监听、没有刷新 | 发现异常（根因所在） |
 
-### 3.2 SDK layer (SmartCaseKit: encoding, decoding, state)
+### 3.2 SDK 层（SmartCaseKit：编码、解码、状态）
 
-| What to check / where | Expected | Actual | Conclusion |
+| 查什么 / 在哪查 | 预期 | 实际 | 结论 |
 | --- | --- | --- | --- |
-| To be checked | | | Not done |
+| 待查 | | | 未做 |
 
-(Add BLE data if needed: message ID / Action / raw byte hex.)
+（需要时补 BLE 数据：消息 ID / Action / 原始字节十六进制。）
 
-### 3.3 iOS / macOS system layer (permissions, Bluetooth toggle, foreground/background, callbacks)
+### 3.3 iOS / macOS 系统层（权限、蓝牙开关、前后台、回调）
 
-| Condition changed (one at a time) | Before | After | Conclusion |
+| 改变的条件（一次一个） | 操作前 | 操作后 | 结论 |
 | --- | --- | --- | --- |
-| To be checked | | | Not done |
+| 待查 | | | 未做 |
 
-### 3.4 Hardware layer (distance / interference / swapped-device control)
+### 3.4 硬件层（距离 / 干扰 / 换设备对照）
 
-| Control experiment | Conditions held constant | Actual result | Conclusion |
+| 对照实验 | 保持不变的条件 | 实际结果 | 结论 |
 | --- | --- | --- | --- |
-| N/A (pure software simulation, no hardware variable) | | | N/A |
+| 不适用（纯软件模拟，无硬件变量） | | | 不适用 |
 
-> With no second device available, write "not verified"; never conclude a hardware fault purely by elimination.
+> 没有对照设备就写“未验证”；不凭排除法判硬件故障。
 
-## 4. Root Cause and Fix
+## 4. 根因与修复
 
-- Trigger condition / first point of failure (end, file, function): Mac side `app` / `DeviceDetailView.swift` — the UI layer never hooks changes to `device.isConnected`.
-- Failure mechanism → how it produces the symptom: in the SDK layer (SmartCaseKit) both the delegate and `isConnected` are triggered correctly (see the call chain and the HCI evidence in section 2), but the UI layer does not observe that state and does not refresh, so after the peer App is killed the detail page stays as it was — which looks like "disconnection not detected".
-- Evidence (screenshots / logs / breakpoint values): Xcode Call Hierarchy trace (section 2), PacketLogger HCI capture (section 2), and before/after-fix screenshots.
-- Minimal fix / why this side and not the other: after the `.padding()` on line 112 of `DeviceDetailView.swift`, add an `onChange` observer that clears the selected device (returning to the device list) when `isConnected` becomes `false`. Only the UI layer was touched because the SDK-layer delegate and state triggering are both already correct, so the SDK needs no change:
+- 触发条件 / 首次出错位置（端、文件、函数）：Mac 端 `app` / `DeviceDetailView.swift`——UI 层没有 hook `device.isConnected` 的变化。
+- 出错机制 → 如何导致现象：SDK 层（SmartCaseKit）的 delegate 与 `isConnected` 均被正确触发（见第 2 节调用链与 HCI 实证），但 UI 层未监听该状态、未刷新，导致杀掉对端 App 后详情页停留原状，看似"未感知断连"。
+- 证据（截图 / 日志 / 断点值）：Xcode Call Hierarchy 跟踪（第 2 节）、PacketLogger HCI 抓包（第 2 节）、修复前后截图对照。
+- 最小修复 / 为什么改这里而不是另一端：在 `DeviceDetailView.swift` 第 112 行 `.padding()` 之后追加 `onChange` 监听，`isConnected` 变为 `false` 时清空选中设备（回设备列表）。只改 UI 层是因为 SDK 层代理与状态触发均已正确，无需动 SDK：
 
 ```swift
 .onChange(of: device.isConnected) { _, newValue in
@@ -91,19 +93,19 @@ Approach: follow "the value the upper layer sent → the value the lower layer r
 }
 ```
 
-- Known side effect (introduced with the fix, arising from existing `ContentView` logic being activated by the new trigger chain): clearing `selectedDevice` on disconnect triggers `enableDiscovery(true)`, which rescans and empties the `devices` list — so after the peer is killed the user lands on an **empty list**, and the device only reappears once the peer advertises again. The behavior is acceptable and was written into the commit message.
-- How to revert this change: revert the commit within the branch.
+- 已知副作用（随修复引入，属既有 `ContentView` 逻辑被新触发链激活）：断连清空 `selectedDevice` 会触发 `enableDiscovery(true)` 重扫并清空 `devices` 列表——杀掉对端后用户回到的是**空列表**，需对端重新广播后才出现。行为可接受，写入提交说明。
+- 如何撤销本次修改：分支内 revert 该提交即可。
 
-## 5. Verification and Delivery
+## 5. 验证与交付
 
-| Item | Pass criteria | Result after fix |
+| 项目 | 通过标准 | 修复后结果 |
 | --- | --- | --- |
-| Original reproduction steps | After killing smartcase, the App returns to the disconnected state within an acceptable delay | Passed: after rebuilding, the reproduction steps were repeated — killing `smartcase` on the iPhone, the App returned to the "Select a Smart Case" device list (see screenshot below, 2026-10-30) |
-| Unit tests (`swift test` in `smartcasekit`, as needed) | All pass | Passed (2026-10-30): both cases `messageRoundTrip` and `messageTooShortIsRejected` green, 0 failures |
-| Dual-device regression (as needed) | Full flow per README run steps 1-6 behaves normally | Passed (2026-10-30, confirmed by the reporter: after rebuilding, clicking Disconnect explicitly returns to the list normally; killing the peer twice more also returned to the list normally both times) |
+| 原复现步骤 | 杀掉 smartcase 后 App 在可接受延迟内回到断连状态 | 通过：重新编译后重复复现步骤，杀掉 iPhone 端 `smartcase`，App 回到 "Select a Smart Case" 设备列表（见下方截图，2026-10-30） |
+| 单测（`smartcasekit` 内 `swift test`，按需） | 全部通过 | 通过（2026-10-30）：2 个用例 `messageRoundTrip`、`messageTooShortIsRejected` 全绿，0 失败 |
+| 双端真机回归（按需） | 按 README 运行步骤 1-6 全流程正常 | 通过（2026-10-30，报告人确认：重编译后主动点 Disconnect 正常回列表；重复杀对端 2 次均正常回列表） |
 
-![After the fix: killing smartcase on the iPhone brings the App back to the device list](<bug-02-assets/fix-01-after-fix.webp>)
+![修复后：杀掉 iPhone 端 smartcase，App 回到设备列表](<bug-02-assets/fix-01-after-fix.webp>)
 
-- [ ] Passing unit tests ≠ dual-device BLE verified; leave "not done" for anything not attempted.
-- [ ] Conclusions and applicability conditions shared with the reporter/QA; anything not re-tested stays "to be confirmed" with a follow-up agreed.
-- [x] Delivered on an independent branch (see [README delivery requirements](README.md#how-to-deliver-the-solutions)), not merged into main; the commit message states what changed and why. (`809fc18`, not merged into main)
+- [ ] 单测通过 ≠ 双端 BLE 已验证；没做的留“未做”。
+- [ ] 已向报告人/QA 同步结论与适用条件；未复测的保持“待确认”并约定跟进。
+- [x] 独立分支交付（见 [README 交付要求](README.md#how-to-deliver-the-solutions)），不合并进 main；提交说明写清改了什么、为什么。（`809fc18`，未合并进 main）
