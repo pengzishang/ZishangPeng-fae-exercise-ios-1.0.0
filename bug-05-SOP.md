@@ -1,85 +1,87 @@
-# Bug 5: Long-Pressing a smartcase Button Gives No Feedback in the app — Troubleshooting Record
+# Bug 5：smartcase 长按按钮在 app 无反馈 排查记录
 
 > 5. Clicking on a `smartcase` button is visible in the `app`, but holding down the button and releasing later is not visible. Feels like a bug, but maybe this is by design?
 
-## 1. Pinned Version and Context
+*本文件为中文版；English version: [bug-05-SOP.md.en.md](bug-05-SOP.md.en.md)*
 
-- Baseline branch / commit: `fix/05-long-press-button-events`; baseline commit `ad26697` (Initial commit: fae-exercise-ios assignment)
-- Uncommitted changes and how they were saved: only this file `bug-05-SOP.md` (untracked, uncommitted); zero changes to product code
-- Fix branch: N/A (judged not a defect, so not fixed)
-- Environment: Mac (MacBookAir10,1 / macOS 27.0.1, Build 26A434); iPhone (iPhone 14 / iOS 27.0.1); Xcode 27.1 (Build 27A9275)
-- Bluetooth permission / initial button data: N/A (this symptom is unrelated to Bluetooth authorization state or initial button data)
+## 1. 固定版本与现场
 
-> Do not use reset/clean to pin the version; do not upgrade dependencies or the OS while troubleshooting.
+- 基线分支 / 提交号：`fix/05-long-press-button-events`；基线提交 `ad26697`（Initial commit: fae-exercise-ios assignment）
+- 未提交改动及保存方式：仅本文件 `bug-05-SOP.md`（未跟踪、未提交）；产品代码零改动
+- 修复分支：不适用（判定为非缺陷，不修）
+- 环境：Mac（MacBookAir10,1 / macOS 27.0.1，Build 26A434）；iPhone（iPhone 14 / iOS 27.0.1）；Xcode 27.1（Build 27A9275）
+- 蓝牙权限 / 初始按钮数据：不适用（本现象与蓝牙权限状态及初始按钮数据无关）
 
-## 2. Symptom and Reproduction
+> 不用 reset/clean 固定版本；排查期间不升级依赖和系统。
 
-- Expected / basis: per `sbsc-protocol.md` v0.1 (Button Event defines only `ButtonTap = 0x00`) and `README.md` L48 (which describes only a tap showing an orange border for half a second), the expectation is no feedback; actual: after long-pressing and releasing, the Mac side does nothing at all — consistent with the expectation.
-- Last known-good time / version / configuration (to narrow the regression window): N/A (the baseline behaves this way, not introduced by a regression)
-- Initial classification: possibly by design (conclusion: by design, not a defect — see section 4)
+## 2. 现象与复现
 
-| Step | Action | Expected | Actual |
+- 预期 / 依据：依据 `sbsc-protocol.md` v0.1（Button Event 只定义 `ButtonTap = 0x00`）和 `README.md` L48（只描述 tap 显示橙框半秒），预期为无反馈；实际长按后松开，Mac 端没有任何反应，与预期一致。
+- 最近一次正常的时间 / 版本 / 配置（缩小回归范围）：不适用（基线版本即如此，非回归引入）
+- 初步分类：可能设计如此（结论：设计如此，非缺陷，见第 4 节）
+
+| 步骤 | 操作 | 预期 | 实际 |
 | --- | --- | --- | --- |
-| 1 | Single-tap the first button on the iPhone (right) | The corresponding button on the Mac (left) shows an orange border | A clearly visible border appears (consistent with the README description) |
-| 2 | Long-press the same button on the iPhone for about 2 seconds, keep the finger still, release slowly | No feedback (the protocol defines no long-press event) | Nothing happens on the Mac side |
-| 3 | Without reconnecting after the long press ends, immediately single-tap the same button normally | The Mac side shows the orange border again | The orange border appears normally |
+| 1 | 单击 iPhone 端（右）第一个按钮 | Mac 端（左）对应按钮出现橙色边框 | 有非常清晰的边框显示（与 README 描述一致） |
+| 2 | 长按 iPhone 端同一按钮约 2 秒、手指不动、慢慢松开 | 无反馈（协议未定义长按事件） | Mac 端没有任何反应 |
+| 3 | 长按结束后不重连，立刻正常单击同一按钮 | Mac 端恢复橙色边框 | 正常出现橙色边框 |
 
-- Reproduction count / minimal repro: easy to reproduce; the minimal repro is the "single tap vs. long-press-and-release" comparison on the same button. Step 2 confirms that zero response holds, and step 3 rules out a stuck gesture or a broken link.
-- Logs if needed: start capture before reproducing, stop after, keep only the relevant window, and redact before sharing.
+- 复现次数 / 最小复现：容易复现；最小复现即同一按钮「单击 vs 长按松开」对比。第 2 步确认零反应成立，第 3 步排除了手势卡死或链路故障。
+- 如需日志：复现前开始、复现后停止，只留相关时段；共享前脱敏。
 
-## 3. Layered Trace (easy → hard, stop once the fault is located)
+## 3. 分层排查（从易到难，做到定位即止）
 
-Fill four columns per layer; conclusions are: anomaly found / no anomaly seen / insufficient evidence / N/A.
-Approach: follow "the value the upper layer sent → the value the lower layer received" and find the earliest boundary where they diverge.
+每层填四格；结论选：发现异常 / 未见异常 / 证据不足 / 不适用。
+思路：沿“上层送出的值 → 下层收到的值”找最早出差异的边界。
 
-### 3.1 App code layer (both Mac `app` and iPhone `smartcase`)
+### 3.1 App 代码层（Mac `app` 与 iPhone `smartcase` 都看）
 
-| What to check / where | Expected | Actual | Conclusion |
+| 查什么 / 在哪查 | 预期 | 实际 | 结论 |
 | --- | --- | --- | --- |
-| iPhone-side button gesture (`smartcase/SmartCase/Views/SmartCaseView.swift` L55) | If long press were supported, there should be an `onLongPressGesture` | Only `onTapGesture`, no long-press gesture | No anomaly seen (consistent with the protocol defining tap only) |
-| Repo-wide keyword search (excluding `.git`, `.build`) | If long press had been implemented or reserved, related identifiers should be findable | Zero source hits for `longPress`/`long_press`; zero hits for `hold` in `*.swift`; `press` has only 2 hits and both are substrings of `ExpressibleByIntegerLiteral` (false positives) | No anomaly seen (no long-press-related code anywhere) |
-| Repo-wide inventory of gesture modifiers (`*.swift`) | If a gesture conflict existed, longPress/drag/simultaneous etc. would appear | Only 2 `onTapGesture` sites: `DeviceDetailView` L84 (Mac side, changes the icon) and `SmartCaseView` L55 (iOS side); no other gesture modifiers at all | No anomaly seen (no gesture conflict, no long-press entry point) |
-| Visual feedback while holding on iOS | If the UI hinted at long press, holding should dim/shrink/highlight | The button itself shows no visual change whatsoever, identical to not pressing | No anomaly seen (the UI does not hint at long press) |
+| iPhone 端按钮手势（`smartcase/SmartCase/Views/SmartCaseView.swift` L55） | 若支持长按，应有 `onLongPressGesture` | 只有 `onTapGesture`，无长按手势 | 未见异常（与协议只定义 tap 一致） |
+| 全仓关键词检索（排除 `.git`、`.build`） | 若实现或预留过长按，应能搜到相关标识 | `longPress`/`long_press` 源码零命中；`hold` 在 `*.swift` 零命中；`press` 仅 2 条且均为 `ExpressibleByIntegerLiteral` 子串（假阳性） | 未见异常（无长按相关代码） |
+| 全仓手势修饰符清点（`*.swift`） | 若存在手势竞争，应出现 longPress/drag/simultaneous 等 | 仅 2 处 `onTapGesture`：`DeviceDetailView` L84（Mac 端改图标）、`SmartCaseView` L55（iOS 端）；其余手势修饰符均无 | 未见异常（无手势竞争、无长按入口） |
+| iOS 端按住时的视觉反馈 | 若 UI 暗示可长按，按住应有变暗/缩小/高亮 | 按钮本身无任何视觉变化，与未按一致 | 未见异常（UI 未暗示长按） |
 
-### 3.2 SDK layer (SmartCaseKit: encoding, decoding, state)
+### 3.2 SDK 层（SmartCaseKit：编码、解码、状态）
 
-| What to check / where | Expected | Actual | Conclusion |
+| 查什么 / 在哪查 | 预期 | 实际 | 结论 |
 | --- | --- | --- | --- |
-| Protocol definition (`sbsc-protocol.md` L110-120, "Button Event") | If long press were supported, the event enum should have a long-press value | Only `ButtonTap = 0x00`, with no long-press/press-down/release event; the field is a 1-byte enum and v0.1 defines only this one value | No anomaly seen (the protocol itself does not define long press) |
-| Mac-side receive→render chain: `peripheralManager.updateValue` → `SmartCaseDevice` L178 → `lastNotification` → `DeviceDetailView` L115 | If long press were supported, the chain should have its own branch or a reserved slot | No code specific to long press, and no reserved code, anywhere in the chain; the chain handles tap events only | No anomaly seen (the whole chain has no long-press semantics) |
+| 协议定义（`sbsc-protocol.md` L110-120「Button Event」） | 若支持长按，事件枚举应有长按值 | 仅 `ButtonTap = 0x00`，无长按/按下/松开事件；字段为 1 字节枚举，v0.1 只定义了这一个值 | 未见异常（协议本身不定义长按） |
+| Mac 端接收→渲染链路：`peripheralManager.updateValue` → `SmartCaseDevice` L178 → `lastNotification` → `DeviceDetailView` L115 | 若支持长按，链路应有独立分支或预留位 | 未见任何针对长按的独特代码或预留代码，链路只处理点击事件 | 未见异常（整条链路无长按语义） |
 
-(Add BLE data if needed: message ID / Action / raw byte hex.)
+（需要时补 BLE 数据：消息 ID / Action / 原始字节十六进制。）
 
-### 3.3 iOS / macOS system layer (permissions, Bluetooth toggle, foreground/background, callbacks)
+### 3.3 iOS / macOS 系统层（权限、蓝牙开关、前后台、回调）
 
-| Condition changed (one at a time) | Before | After | Conclusion |
+| 改变的条件（一次一个） | 操作前 | 操作后 | 结论 |
 | --- | --- | --- | --- |
-| Whether digging into the system layer is needed | — | Not needed: the absence of long-press feedback is fully explained by "the protocol defines no long-press event, and the iOS side has no long-press gesture"; it has nothing to do with permissions, the Bluetooth toggle, or foreground/background callbacks | N/A |
+| 是否需要下探系统层 | — | 不需要：长按无反馈已由「协议未定义长按事件、iOS 端无长按手势」完整解释，与权限、蓝牙开关、前后台回调无关 | 不适用 |
 
-### 3.4 Hardware layer (distance / interference / swapped-device control)
+### 3.4 硬件层（距离 / 干扰 / 换设备对照）
 
-| Control experiment | Conditions held constant | Actual result | Conclusion |
+| 对照实验 | 保持不变的条件 | 实际结果 | 结论 |
 | --- | --- | --- | --- |
-| Swapped device / changed distance control | — | Not done: the symptom is already fully explained by the protocol and the code, and has nothing to do with RF, distance, or interference | Not verified (N/A) |
+| 换设备 / 换距离对照 | — | 未做：现象已由协议与代码完整解释，与射频、距离、干扰无关 | 未验证（不适用） |
 
-> With no second device available, write "not verified"; never conclude a hardware fault purely by elimination.
+> 没有对照设备就写“未验证”；不凭排除法判硬件故障。
 
-## 4. Root Cause and Fix
+## 4. 根因与修复
 
-- Trigger condition / first point of failure (end, file, function): N/A. The conclusion is that this is not a defect — the design is exactly as intended, so there is no point of failure. The symptom starts from the iOS side `SmartCaseView` L55 registering only `onTapGesture`, and that implementation is consistent with the protocol.
-- Failure mechanism → how it produces the symptom: on a long press the iOS side has no matching gesture recognizer, so no Button Event notification is produced; the Mac side receives no message, `lastNotification` is not updated, and the border condition at `DeviceDetailView` L115 is not satisfied — hence no feedback. The entire chain is operating normally according to "the protocol defines only ButtonTap".
-- Evidence (screenshots / logs / breakpoint values): ① the product spec `README.md` L48 describes only a tap showing an orange border for half a second and defines no long press; ② the protocol `sbsc-protocol.md` v0.1 L110-120 defines the event enum as `ButtonTap = 0x00` only; ③ the iOS side `SmartCaseView` L55 has only `onTapGesture`, and a repo-wide search for `longPress`/`hold` returns zero hits; ④ the Mac-side chain `updateValue` → `SmartCaseDevice` L178 → `lastNotification` → `DeviceDetailView` L115 has no long-press branch; ⑤ measured: long-pressing for 2 seconds and releasing gives no border, and a single tap immediately afterwards shows the border normally. The reproduction screenshot shows the Mac side connected with the first button bordered in orange, and the iPhone showing its 4 buttons.
-- Minimal fix / why this side and not the other: N/A, this item is not fixed. If long press is to be supported later, raise the protocol version first (the "Button Event" 1-byte enum is extensible, e.g. `ButtonHold = 0x01`), then have both ends follow up accordingly.
-- How to revert this change: N/A (troubleshooting changed no product code; this file is a newly added record, so deleting `bug-05-SOP.md` reverts everything).
+- 触发条件 / 首次出错位置（端、文件、函数）：不适用。结论是非缺陷，设计本来如此，无出错位置。现象起点是 iOS 端 `SmartCaseView` L55 只注册 `onTapGesture`，该实现与协议一致。
+- 出错机制 → 如何导致现象：长按时 iOS 端无对应手势识别器，不产生 Button Event 通知；Mac 端收不到消息，`lastNotification` 不更新，`DeviceDetailView` L115 边框条件不满足，于是无反馈。整条链路按「协议只定义 ButtonTap」正常运转。
+- 证据（截图 / 日志 / 断点值）：① 产品规格 `README.md` L48 只描述 tap 显示橙框半秒，未定义长按；② 协议 `sbsc-protocol.md` v0.1 L110-120 事件枚举仅 `ButtonTap = 0x00`；③ iOS 端 `SmartCaseView` L55 仅 `onTapGesture`，全仓检索 `longPress`/`hold` 零命中；④ Mac 端 `updateValue` → `SmartCaseDevice` L178 → `lastNotification` → `DeviceDetailView` L115 无长按分支；⑤ 实测：长按 2 秒松手无边框，随后单击正常出现边框。复现现场截图为 Mac 端已连接、第 1 个按钮带橙框，iPhone 端 4 个按钮。
+- 最小修复 / 为什么改这里而不是另一端：不适用，本题不修。若未来要支持长按，先升协议（「按钮事件」1 字节枚举可扩展，如 `ButtonHold = 0x01`），再由双端各自跟进。
+- 如何撤销本次修改：不适用（排查未改动任何产品代码；本文件为新增记录，删除 `bug-05-SOP.md` 即完全撤销）。
 
-## 5. Verification and Delivery
+## 5. 验证与交付
 
-| Item | Pass criteria | Result after fix |
+| 项目 | 通过标准 | 修复后结果 |
 | --- | --- | --- |
-| Original reproduction steps | The reproduction result matches the judgement | Re-tested: long press gives no response, a subsequent single tap works normally — consistent with the judgement; nothing to fix for this item |
-| Unit tests (`swift test` in `smartcasekit`, as needed) | Not required if no code was changed | Not done (N/A: no product code changed) |
-| Dual-device regression (as needed) | Not required if no code was changed | Not done (N/A: no product code changed) |
+| 原复现步骤 | 复现结果与判定一致 | 已复测：长按无反应、随后单击正常，与判定一致；本项无需修复 |
+| 单测（`smartcasekit` 内 `swift test`，按需） | 未改代码则无需执行 | 未做（不适用：未改动产品代码） |
+| 双端真机回归（按需） | 未改代码则无需回归 | 未做（不适用：未改动产品代码） |
 
-- [x] Passing unit tests ≠ dual-device BLE verified; leave "not done" for anything not attempted. Both unit tests and dual-device regression were not done here (N/A).
-- [ ] Conclusions and applicability conditions shared with the reporter/QA; anything not re-tested stays "to be confirmed" with a follow-up agreed. Not done — constraints of the interview setting prevented sharing.
-- [x] Delivered on an independent branch (see [README delivery requirements](README.md#how-to-deliver-the-solutions)), not merged into main; the commit message states what changed and why. No code change; branch `fix/05-long-press-button-events` carries this record only.
+- [x] 单测通过 ≠ 双端 BLE 已验证；没做的留“未做”。本次单测、双端回归均未做（不适用）。
+- [ ] 已向报告人/QA 同步结论与适用条件；未复测的保持“待确认”并约定跟进。未做，面试条件受限，未同步。
+- [x] 独立分支交付（见 [README 交付要求](README.md#how-to-deliver-the-solutions)），不合并进 main；提交说明写清改了什么、为什么。无代码改动，分支 `fix/05-long-press-button-events` 仅承载本记录。
