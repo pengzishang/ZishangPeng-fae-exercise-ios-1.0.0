@@ -1,109 +1,111 @@
-# Bug 3: Icon State Out of Sync After Connecting — Troubleshooting Record
+# Bug 3：连接后图标状态不同步 排查记录
 
 > 3. Start `smartcase` on iPhone, then connect to it from `app` on the Mac. The `app` doesn't show the same icons as `smartcase`. When changing icons from the `app`, everything is looking good, however when restarting the `app`, the icons are wrong again.
 
-## 1. Pinned Version and Context
+*本文件为中文版；English version: [bug-03-SOP.md.en.md](bug-03-SOP.md.en.md)*
 
-- Baseline branch / commit: `main` @ `ad26697` (Initial commit: fae-exercise-ios assignment)
-- Change and commit status: the fix is committed as `a2be0f9` (line 63, imageIndex offset `+1` → `+0`, that single line only); the troubleshooting instrumentation has been removed; the extract-a-function-for-unit-tests approach was decided against and reverted, and the test file deleted (see section 5); this record plus `bug-03-assets/` were pending a `docs:` commit
-- Fix branch: `fix/03-icon-state-sync-on-reconnect` (existing commit: `a2be0f9`)
-- Environment: Mac (model / macOS) MacBook Air (MacBookAir10,1, Apple M1) / macOS 27.0.1 (26A434); iPhone (model / iOS) iPhone 14 / iOS 27.0.1 (same setup as Bug 2); Xcode 27.1 (27A9275), Swift 6.4 (measured on this machine)
-- Bluetooth permission / initial button data: the permission wording is "…smart watches" (in Bug 4's scope); initial button data was not separately captured — the code defaults all four buttons to img 0 / RGB(32,32,32), and the state observed during the session is in the 3.2 egress payload check
+## 1. 固定版本与现场
 
-> Do not use reset/clean to pin the version; do not upgrade dependencies or the OS while troubleshooting.
+- 基线分支 / 提交号：`main` @ `ad26697`（Initial commit: fae-exercise-ios assignment）
+- 改动与提交状态：修复已提交 `a2be0f9`（第 63 行 imageIndex 偏移 `+1` → `+0`，仅此一行）；排查插桩已移除；为单测的抽函数方案拍板退回、测试文件已删（见第 5 节）；本记录与 `bug-03-assets/` 待按 `docs:` 提交
+- 修复分支：`fix/03-icon-state-sync-on-reconnect`（现有提交：`a2be0f9`）
+- 环境：Mac（机型 / macOS）MacBook Air（MacBookAir10,1，Apple M1）/ macOS 27.0.1（26A434）；iPhone（机型 / iOS）iPhone 14 / iOS 27.0.1（与 Bug 2 现场一致）；Xcode 27.1（27A9275）、Swift 6.4（本机实测）
+- 蓝牙权限 / 初始按钮数据：权限文案为 "…smart watches"（属 Bug 4 范围）；初始按钮数据未单独取证，代码默认四按钮 img 0 / RGB(32,32,32)，会话中实测状态见 3.2 出口核验 payload
 
-## 2. Symptom and Reproduction
+> 不用 reset/clean 固定版本；排查期间不升级依赖和系统。
 
-- Expected / basis: README Assignment item 3 — after `app` connects to `smartcase`, it should show icons matching `smartcase`; actual: after connecting, the icons `app` shows do not match `smartcase`
-- Last known-good time / version / configuration (to narrow the regression window): N/A (assignment baseline, no previously known-good version)
-- Initial classification: suspected defect
+## 2. 现象与复现
 
-| Step | Action | Expected | Actual |
+- 预期 / 依据：README Assignment 第 3 条——`app` 连上 `smartcase` 后应显示与 `smartcase` 一致的图标；实际：连接后 `app` 显示的图标与 `smartcase` 不一致
+- 最近一次正常的时间 / 版本 / 配置（缩小回归范围）：不适用（作业基线，此前无已知正常版本）
+- 初步分类：疑似缺陷
+
+| 步骤 | 操作 | 预期 | 实际 |
 | --- | --- | --- | --- |
-| 1 | Start Mac `app` and iOS `smartcase` at the same time | — | — |
-| 2 | Connect from the Mac to the iOS side | `app` shows the same button icons as `smartcase` | Icons on the two ends do not match |
-| 3 | Tap and change a few buttons at random from the Mac | Both sides change in sync | Everything normal in this phase |
-| 4 | Disconnect on the iOS side, then reconnect | Icons stay consistent on both ends | **Icons clearly inconsistent on the two ends** |
-| 5 | Kill the `smartcase` process on iOS several times | — | The iOS-side icons stay **stable and unchanged** → suggests permanent storage on the iOS side, state surviving across processes |
-| 6 | (Supplementary observation before the fix) while the two ends disagree, tap one of the mismatched buttons on the Mac | — | **The tapped button immediately matches the iOS side, while the untouched buttons stay mismatched**; after disconnecting and reconnecting on the Mac, the UI icons go wrong again |
+| 1 | 同时启动 Mac 端 `app` 和 iOS 端 `smartcase` | — | — |
+| 2 | Mac 端连接 iOS 端 | `app` 显示与 `smartcase` 相同的按钮图标 | 两端图标不一致 |
+| 3 | Mac 端随意点击改动几次 | 双方同步变化 | 此阶段一切正常 |
+| 4 | iOS 端断开后再重新连上 | 两端图标保持一致 | **两端图标明显不一致** |
+| 5 | iOS 端反复杀掉 `smartcase` 进程几次 | — | iOS 端图标**稳定不变** → 疑似 iOS 端存在永久储存，状态跨进程存活 |
+| 6 | （修复前补充观察）两端不一致时，在 Mac 端点击其中某个不一致的按钮 | — | **被点击的按钮立即与 iOS 端一致，其余未点击的按钮仍保持不一致**；Mac 端断开重新连接后，界面图标又重新变乱 |
 
-- Reproduction count / minimal repro: reliably reproducible in practice (steps 1→4); minimal repro = start both ends, connect, make a few changes from the Mac, then disconnect and reconnect on iOS
-- The step-6 observation matches the root-cause mechanism: a tap only updates the local state of the tapped button (the `setButtonImage` path does not go through response decoding), so untouched buttons still hold the wrong value from the last decode; after disconnect and reconnect the decode path runs again and the error returns
-- Initial inference (recorded alongside the reproduction): the iOS icons do not change across repeated process kills, which suggests the iPhone side very likely persists button state — so the disagreement after reconnect is more likely on the Mac's data-fetch/rendering side
-- Logs if needed: start capture before reproducing, stop after, keep only the relevant window, and redact before sharing. Not collected.
+- 复现次数 / 最小复现：实测可稳定复现（步骤 1→4）；最小复现 = 同时启动两端、连接、Mac 端改动几次、iOS 端断开重连
+- 步骤 6 观察与根因机制吻合：点击仅更新被点按钮的本地状态（`setButtonImage` 路径不经过响应解码），未点击的按钮仍持有上一次解码的错误值；断开重连后重新走一遍解码，错误再次复现
+- 初步推断（随复现记录）：iOS 端反复杀进程图标不变，说明 iPhone 侧按钮状态大概率有持久化存储，断开重连后不一致的差距更可能出在 Mac 端取数/呈现侧
+- 如需日志：复现前开始、复现后停止，只留相关时段；共享前脱敏。未采集。
 
-## 3. Layered Trace (easy → hard, stop once the fault is located)
+## 3. 分层排查（从易到难，做到定位即止）
 
-**Initial line of thought (verbatim):**
+**初步思路（原话）**：
 
-> My gut on question 3 is that it's a sync problem — the first time the Mac connects to the iPhone, it should be pulling the button data from the iPhone side.
+> 我感觉第三题是一个同步问题，第一次 mac 连接 iPhone 的时候，应该是要从 iPhone 那边取到 iPhone 那边按钮的数据。
 
-### 3.0 Mapping the value chain on both ends (2026-10-30)
+### 3.0 两端取值链梳理（2026-10-30）
 
-**iOS side (where SmartCase state comes from)**:
+**iOS 端（SmartCase 状态来源）**：
 
-- Button state is read from `buttons` on line 24 of `SmartCase`;
-- the `SmartCase` singleton takes its values at initialization, going through the `loadButtons()` method;
-- which in turn points at the `persistentButtons` variable;
-- that value is handled by a propertyWrapper called `Persistent`, i.e. it **is persisted** (mutually corroborating the section-2 observation "repeated process kills, icons stay unchanged → suggests permanent storage").
+- 按钮状态从 `SmartCase` 的第 24 行 `buttons` 读取；
+- `SmartCase` 这个单例在初始化时取值，走 `loadButtons()` 方法；
+- 进一步指向 `persistentButtons` 变量；
+- 该值由 `Persistent` 这个 propertyWrapper 处理，**永久化了**（与第 2 节“反复杀进程图标稳定不变 → 疑似永久储存”的观察互相印证）。
 
-**Mac side (chain for obtaining button state)**:
+**Mac 端（按钮状态获取链）**：
 
-- once `selectedDevice` changes, the connection is initiated through `SmartCaseDevice`'s `connect()` method;
-- inside `public func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: (any Error)?)`, `updateButtons()` is called;
-- which then does `let response = try await sendRequest(request)`, performing a `writeValue` on the peripheral;
-- the iPhone side receives it via `handleRequest` → `handleWriteRequest` inside `func peripheralManager(_ peripheral: CBPeripheralManager, didReceiveWrite requests: [CBATTRequest])`;
-- finally `handleRequest` reads the values of the iOS-side `buttons`.
+- `selectedDevice` 值改变后，通过 `SmartCaseDevice` 的 `connect()` 方法发起连接；
+- 在 `public func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: (any Error)?)` 中调用 `updateButtons()`；
+- 继而 `let response = try await sendRequest(request)` 对 peripheral 进行 `writeValue` 操作；
+- iPhone 端经 `func peripheralManager(_ peripheral: CBPeripheralManager, didReceiveWrite requests: [CBATTRequest])` 中 `handleRequest` → `handleWriteRequest` 接收；
+- 最终在 `handleRequest` 取到 iOS 端 `buttons` 的值。
 
-**Next action**: check this chain for any **value-passing or read error**.
+**下一步行动**：检查这条链路中是否有**值传递或者读取错误**。
 
-### 3.1 App code layer (both Mac `app` and iPhone `smartcase`)
+### 3.1 App 代码层（Mac `app` 与 iPhone `smartcase` 都看）
 
-| What to check / where | Expected | Actual | Conclusion |
+| 查什么 / 在哪查 | 预期 | 实际 | 结论 |
 | --- | --- | --- | --- |
-| `app/App/Views/DeviceDetailView.swift:76-86` | Icons/colors come from `device.buttons` | Confirmed it renders by reading `device.buttons[i]` directly, no separate cache in the UI layer | No anomaly seen (initial read-through) |
-| iOS-side state source | Persisted, readable back after restart | `smartcase/SmartCase/Models/SmartCase.swift:44-59` uses `@Persistent(key: "buttons")` to persist and calls `loadButtons()` in init | No anomaly seen (initial read-through) |
+| `app/App/Views/DeviceDetailView.swift:76-86` | 图标/颜色来自 `device.buttons` | 确认直接读 `device.buttons[i]` 渲染，UI 层无独立缓存 | 未见异常（初步阅读） |
+| iPhone 端状态来源 | 持久化、重启后可读回 | `smartcase/SmartCase/Models/SmartCase.swift:44-59` 用 `@Persistent(key: "buttons")` 持久化并在 init 时 `loadButtons()` | 未见异常（初步阅读） |
 
-### 3.2 SDK layer (SmartCaseKit: encoding, decoding, state)
+### 3.2 SDK 层（SmartCaseKit：编码、解码、状态）
 
-| What to check / where | Expected | Actual | Conclusion |
+| 查什么 / 在哪查 | 预期 | 实际 | 结论 |
 | --- | --- | --- | --- |
-| Whether button state is pulled after the connection is established (the core of the initial hypothesis) | After connecting, current button data should be fetched from the peripheral | `SmartCaseKit/SmartCaseDevice.swift`: inside `didDiscoverCharacteristicsFor` there is indeed `Task { try? await updateButtons() }`, and `getButtons` is in fact sent after connecting | Nothing missing |
-| Encoding side of the `getButtons` response | Per `sbsc-protocol.md`: `[status, count, (img, R, G, B) × n]` | iPhone side `SmartCase.swift:64-70` assembles the packet byte by byte per the protocol | No anomaly seen |
-| Decoding side of the `getButtons` response | imageIndex is the first byte of each button (offset +0) | `SmartCaseDevice.swift`: `imageIndex` originally read `payload[2+i*4+1]`, i.e. the **same byte** as `red` (also +1); per the protocol it should be `payload[2+i*4]`. The R/G/B channel offsets are correct | **Anomaly found (confirmed)**: the Mac side receives fine (`response.payload` is byte-for-byte identical to what the iOS side sent), so the divergence is proven to be in the decode offset. After changing the offset from `+1` to `+0` and re-testing, **the problem was resolved** |
-| iOS-side egress check (measured, 2026-10-30) | The encoder packs per the protocol, imageIndex consistent with the iOS UI | Added `debugPrint(button.imageIndex)` on line 68 of `handleRequest`; the console printed `0 0 0 0`, matching the four-button state in the iOS UI before sending (screenshot `bug-03-assets/ios-smartcase-ui-icons.webp`: four buttons share one icon, backgrounds differ); the payload actually sent, byte by byte: `0:0, 1:4, 2:0, 3:60, 4:60, 5:20, 6:0, 7:20, 8:20, 9:20, 10:0, 11:60, 12:60` (screenshot `bug-03-assets/ios-getbuttons-payload-log.webp`). Reading: `[0]=status OK`, `[1]=4 buttons`, button 0 = img 0 + RGB(60,60,20), button 1 = img 0 + RGB(20,20,20), button 2 = img 0 + RGB(60,60,…) | **No anomaly seen (encoding side)**: imageIndex is 0 at every egress position and matches the UI, encoding follows the protocol. The byte listing stops at index 12 (the protocol calls for 18 bytes for 4 buttons) — in the post-fix regression screenshot (`after-fix-reconnect-icons-match.webp`) button 3's icon (Spotify) renders correctly, which shows button 3's img byte (payload[14]) arrived intact and decoded correctly, so the listing stopping at 12 is judged to be **log display truncation**, not payload truncation |
+| 连接建立后是否拉取按钮状态（初步思路的核心） | 连接后应从 peripheral 取当前按钮数据 | `SmartCaseKit/SmartCaseDevice.swift`：`didDiscoverCharacteristicsFor` 里确有 `Task { try? await updateButtons() }`，连接后确实发送了 `getButtons` | 未见缺失 |
+| `getButtons` 应答的编码侧 | 按 `sbsc-protocol.md`：`[status, count, (img, R, G, B) × n]` | iPhone 端 `SmartCase.swift:64-70` 逐字节按协议组包 | 未见异常 |
+| `getButtons` 应答的解码侧 | imageIndex 取每按钮第 1 字节（偏移 +0） | `SmartCaseDevice.swift`：`imageIndex` 原读 `payload[2+i*4+1]`，与 `red`（同为 +1）读到**同一字节**；按协议应为 `payload[2+i*4]`。R/G/B 三通道偏移正确 | **发现异常（已实锤）**：Mac 端接收正常（`response.payload` 与 iOS 端发出值逐字节相同），确认差异出在解码偏移。将偏移 `+1` 改为 `+0` 后复测，**问题解决** |
+| iOS 端出口核验（实测，2026-10-30） | 编码侧按协议组包，imageIndex 与 iOS UI 一致 | 在 `handleRequest` 第 68 行加 `debugPrint(button.imageIndex)`，console 输出 `0 0 0 0`，与发送前 iOS UI 四按钮状态一致（截图 `bug-03-assets/ios-smartcase-ui-icons.webp`：四按钮同一图标、背景色各异）；实际发出的 payload 逐字节：`0:0, 1:4, 2:0, 3:60, 4:60, 5:20, 6:0, 7:20, 8:20, 9:20, 10:0, 11:60, 12:60`（截图 `bug-03-assets/ios-getbuttons-payload-log.webp`）。解读：`[0]=status OK`、`[1]=4 按钮`、按钮 0 = img 0 + RGB(60,60,20)、按钮 1 = img 0 + RGB(20,20,20)、按钮 2 = img 0 + RGB(60,60,…) | **未见异常（编码侧）**：imageIndex 出口全 0 且与 UI 相符，编码按协议。payload 清单止于索引 12（协议 4 按钮应为 18 字节）——修复后回归截图（`after-fix-reconnect-icons-match.webp`）中按钮 3 图标（Spotify）显示正确，说明按钮 3 的 img 字节（payload[14]）完整到达并被正确解码，判定当初清单止于 12 为**日志展示截断**而非载荷截断 |
 
-(Message ID / Action were not recorded; they do not affect the diagnosis. The Mac receive side was verified: `response.payload` is byte-for-byte identical to what iOS sent.)
+（消息 ID / Action 未记录，对定位无影响；Mac 端接收侧已核验：`response.payload` 与 iOS 端发出值逐字节相同。）
 
-### 3.3 iOS / macOS system layer (permissions, Bluetooth toggle, foreground/background, callbacks)
+### 3.3 iOS / macOS 系统层（权限、蓝牙开关、前后台、回调）
 
-| Condition changed (one at a time) | Before | After | Conclusion |
+| 改变的条件（一次一个） | 操作前 | 操作后 | 结论 |
 | --- | --- | --- | --- |
-| — | — | — | **N/A**: the iOS egress payload and the Mac received payload are byte-for-byte identical (see 3.2); there is no divergence anywhere along the transport chain, so the system layer is not the source of the discrepancy |
+| — | — | — | **不适用**：iOS 端出口 payload 与 Mac 端接收 payload 逐字节一致（见 3.2），数据在整个传递链路上无差异，系统层不是差异来源 |
 
-### 3.4 Hardware layer (distance / interference / swapped-device control)
+### 3.4 硬件层（距离 / 干扰 / 换设备对照）
 
-| Control experiment | Conditions held constant | Actual result | Conclusion |
+| 对照实验 | 保持不变的条件 | 实际结果 | 结论 |
 | --- | --- | --- | --- |
-| — | — | — | **N/A**: same as 3.3 — the data has been proven intact in transit, and reproduction is 100% tied to the data content (only the imageIndex byte is misaligned); no sign of a hardware fault |
+| — | — | — | **不适用**：同 3.3——传递过程数据已证明无问题，且复现 100% 与数据内容相关（仅 imageIndex 字节错位），无硬件故障迹象 |
 
-## 4. Root Cause and Fix
+## 4. 根因与修复
 
-- Trigger condition / first point of failure (end, file, function): **Mac side (SmartCaseKit)**, `updateButtons()` in `smartcasekit/Sources/SmartCaseKit/SmartCaseDevice.swift` — triggered on every first button-state pull after a connection is established (both the initial connect and the reconnect after `app` restarts).
-- Failure mechanism → how it produces the symptom: the iOS side packs `[status, count, (img, R, G, B) × 4]` per the protocol (proven by the egress check), and the Mac's received `response.payload` is byte-for-byte identical to what was sent (no divergence on the receive side); but at decode time `imageIndex` is read from `payload[2 + buttonIndex * 4 + 1]` — offset `+1` is the **red channel** position, while the real imageIndex sits at `+0`. So each button's "icon index" was read as the value of its background red, while the R/G/B offsets are all correct, which is exactly why **colors render fine and only the icons are wrong**. When changing an icon from `app`, `setButtonImage` updates the local `buttons` state directly and never goes through this decode path, hence "everything is fine while making changes", and only the tapped button snaps back into agreement (the step-6 observation in section 2); after restarting `app` or disconnecting/reconnecting on iOS, `updateButtons()` decodes again and the error returns.
-- Evidence (screenshots / logs / breakpoint values): ① iOS egress check: `debugPrint(button.imageIndex)` inside `handleRequest` printed `0 0 0 0`, matching the UI; payload byte by byte `0:0, 1:4, 2:0, 3:60, 4:60, 5:20, 6:0, 7:20, 8:20, 9:20, 10:0, 11:60, 12:60` (screenshots `bug-03-assets/ios-smartcase-ui-icons.webp`, `bug-03-assets/ios-getbuttons-payload-log.webp`) — for button 0 the `+0` byte is 0 (the icon) and the `+1` byte is 60 (the red channel), so the old code would read the icon as 60; ② Mac receive side: printing `response.payload` gives the same bytes iOS sent; ③ post-fix re-test passed (see section 5).
-- Minimal fix / why this side and not the other: change the decode offset from `+1` to `+0` (`payload[2 + buttonIndex * 4]`). The fix goes on the Mac decode side rather than the iOS encode side because the iOS encoding and persistence were both verified protocol-conformant, and this single decode offset is the only deviation from the protocol.
-- How to revert this change: `git revert a2be0f9` (or set the offset on line 63 back to `+1`) restores the original defect; the instrumentation has already been removed, so nothing else to clean up.
+- 触发条件 / 首次出错位置（端、文件、函数）：**Mac 端（SmartCaseKit）**，`smartcasekit/Sources/SmartCaseKit/SmartCaseDevice.swift` 的 `updateButtons()`——每次连接建立后初次拉取按钮状态（含初连与 `app` 重启后重连）时触发。
+- 出错机制 → 如何导致现象：iOS 端按协议组包 `[status, count, (img, R, G, B) × 4]`（出口核验已证），Mac 端接收的 `response.payload` 与发出值逐字节相同（接收侧无差异）；但解码时 `imageIndex` 读的是 `payload[2 + buttonIndex * 4 + 1]`——偏移 `+1` 是**红色通道**的位置，真正的 imageIndex 在 `+0`。于是每个按钮的“图标索引”被错读成背景红色的数值，而 R/G/B 三通道偏移都正确，所以**颜色显示正常、唯独图标错**。从 `app` 改图标时 `setButtonImage` 直接更新本地 `buttons` 状态、不经过这条解码路径，所以“改动期间一切正常”，且只有被点击的按钮恢复一致（第 2 节步骤 6 观察）；重启 `app` / iOS 端断开重连后重新走 `updateButtons()` 解码，错误复现。
+- 证据（截图 / 日志 / 断点值）：①iOS 端出口核验：`handleRequest` 内 `debugPrint(button.imageIndex)` 输出 `0 0 0 0` 与 UI 一致；payload 逐字节 `0:0, 1:4, 2:0, 3:60, 4:60, 5:20, 6:0, 7:20, 8:20, 9:20, 10:0, 11:60, 12:60`（截图 `bug-03-assets/ios-smartcase-ui-icons.webp`、`bug-03-assets/ios-getbuttons-payload-log.webp`）——按钮 0 的 `+0` 字节是 0（图标），`+1` 字节是 60（红通道），旧代码会把图标读成 60；②Mac 端接收侧：打印 `response.payload` 与 iOS 发出值相同；③修复后复测通过（见第 5 节）。
+- 最小修复 / 为什么改这里而不是另一端：将解码处偏移 `+1` 改为 `+0`（`payload[2 + buttonIndex * 4]`）。改 Mac 端解码侧而非 iOS 端编码侧，因为 iOS 端编码与持久化均已按协议核验无误，唯一偏离协议的位置就是这一处解码偏移。
+- 如何撤销本次修改：`git revert a2be0f9`（或把第 63 行偏移改回 `+1`）即可复现原始缺陷；插桩已移除，无需处理。
 
-## 5. Verification and Delivery
+## 5. 验证与交付
 
-| Item | Pass criteria | Result after fix |
+| 项目 | 通过标准 | 修复后结果 |
 | --- | --- | --- |
-| Original reproduction steps (start both ends → connect → several Mac-side changes → iOS disconnect/reconnect) | Icons match on both ends | **Passed (measured)**: after changing the offset to `+0` and re-testing, icons match on both ends; problem resolved |
-| Unit tests (`swift test` in `smartcasekit`) | The decode function asserts byte by byte against a protocol payload and passes | **Not included in the delivery (decided)**: an "extract decode into a static function + 4 decode cases" approach was implemented and ran 6/6 green (including the 2 existing message cases; requires `swift test --disable-sandbox`), but it needed restructuring the source layout, so it was decided against and reverted — the source keeps only the one-line fix and the test file was deleted. Acceptance rests on the dual-device regression |
-| Dual-device regression (as needed) | Icons match on both ends after initial connect, after changes, and after reconnect | **Passed (measured, 2026-10-30)**: several rounds of Mac-side taps and changes, then iOS disconnect/reconnect — icons and background colors match button by button (screenshot `bug-03-assets/after-fix-reconnect-icons-match.webp`: Mac `app` and iPhone side by side, all four buttons' icon/background pair up exactly) |
-| Restart / reinstall `app` scenario (the original README symptom) | Icons still match on both ends after restarting `app` | **Passed (confirmed in practice)**: restarting `app`, and deleting `app` then reconnecting, both keep the icons correctly in sync. All scenarios in the original README symptom are covered |
+| 原复现步骤（同时启动两端 → 连接 → Mac 端改动几次 → iOS 端断开重连） | 两端图标一致 | **通过（实测）**：偏移改 `+0` 后复测，两端图标一致，问题解决 |
+| 单测（`smartcasekit` 内 `swift test`） | 解码函数对协议 payload 逐字节断言通过 | **未纳入交付（拍板）**：曾实现“解码抽静态函数 + 4 个解码用例”方案并跑通 6/6（含既有 2 个消息用例，运行需 `swift test --disable-sandbox`），但该方案需要重构源码结构，拍板退回——源码只保留单行修复，测试文件已删除。验收以双端真机回归为准 |
+| 双端真机回归（按需） | 初连 / 改动 / 重连后两端图标均一致 | **通过（实测，2026-10-30）**：Mac 端点击多轮改动后 iOS 端断开重连，两端图标与背景色逐按钮一致（截图 `bug-03-assets/after-fix-reconnect-icons-match.webp`：Mac `app` 与 iPhone 同屏对照，四按钮 图标/背景 完全对应） |
+| 重启 / 重装 `app` 场景（README 原始症状） | 重启 `app` 后两端图标仍一致 | **通过（实测确认）**：重启 `app`、删除 `app` 后重新连接，图标仍正常一致。README 原始症状的全部场景已覆盖 |
 
-- [x] The device regression covers real dual-end BLE behavior; anything not done is labeled as such (unit tests not included in the delivery).
-- [x] Conclusions and applicability conditions shared (I am the person who made the fix); applicability: covers only the `getButtons` decode path — the `setButtonBackground` / `setButtonImage` paths are not affected by this fix.
-- [x] Delivered on an independent branch (see [README delivery requirements](README.md#how-to-deliver-the-solutions)), not merged into main: the fix was committed as `fix(kit):` (`a2be0f9`, 1 file / 1 insertion / 1 deletion); this record and the evidence folder follow as a `docs:` commit. The branch has **not been pushed to origin**; push timing and delivery form (public repo / zip) still to be decided.
+- [x] 真机回归已覆盖双端 BLE 实际行为；未做项已如实标注（单测未纳入交付）。
+- [x] 结论与适用条件已同步（本人即修复执行人）；适用条件：仅覆盖 `getButtons` 解码路径，`setButtonBackground` / `setButtonImage` 路径不受本修复影响。
+- [x] 独立分支交付（见 [README 交付要求](README.md#how-to-deliver-the-solutions)），不合并进 main：修复已按 `fix(kit):` 规格提交（`a2be0f9`，1 file / 1 insertion / 1 deletion）；本记录与证据目录随后按 `docs:` 提交。分支**未推送 origin**，推送时机与交付形式（公开仓库 / zip）待定。
